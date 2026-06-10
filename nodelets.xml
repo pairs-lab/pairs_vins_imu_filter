@@ -1,6 +1,0 @@
-
-<library path="lib/libPairsVinsImuFilter_VinsImuFilter">
-  <class name="pairs_vins_imu_filter/VinsImuFilter" type="vins_imu_filter::VinsImuFilter" base_class_type="nodelet::Nodelet">
-    <description>VinsImuFilter nodelet</description>
-  </class>
-</library>

@@ -1,64 +1,104 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20.0)
 project(pairs_vins_imu_filter)
 
-set(CMAKE_CXX_STANDARD 17)
+# set the correct standards
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(LIBRARIES 
-  PairsVinsImuFilter_VinsImuFilter
-  )
+# set the compile options to show code warnings
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
-set(CATKIN_DEPENDENCIES
-  cmake_modules
+if(ENABLE_COVERAGE)
+  message(WARNING "building for coverage, the performance might be limited")
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs")
+
+  add_definitions("-O1")
+  add_definitions("-g")
+endif()
+
+set(DEPENDENCIES
   geometry_msgs
   pairs_lib
   nav_msgs
-  nodelet
-  roscpp
+  rclcpp
+  rclcpp_components
+  std_msgs
   tf2
   tf2_ros
-  )
-
-find_package(catkin REQUIRED COMPONENTS
-  ${CATKIN_DEPENDENCIES}
 )
 
-catkin_package(
-  LIBRARIES ${LIBRARIES}
-  CATKIN_DEPENDS ${CATKIN_DEPENDENCIES}
+set(LIBRARIES 
+  PairsVinsImuFilter_VinsImuFilter
 )
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
+foreach(DEP IN LISTS DEPENDENCIES)
+  find_package(${DEP} REQUIRED)
+endforeach()
 
-add_library(PairsVinsImuFilter_VinsImuFilter
+## --------------------------------------------------------------
+## |                           Compile                          |
+## --------------------------------------------------------------
+
+# Imu Filter
+
+add_library(PairsVinsImuFilter_VinsImuFilter SHARED
   src/VinsImuFilter.cpp
-  )
-
-add_dependencies(PairsVinsImuFilter_VinsImuFilter
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
 )
 
-target_link_libraries(PairsVinsImuFilter_VinsImuFilter
-  ${catkin_LIBRARIES}
+ament_target_dependencies(PairsVinsImuFilter_VinsImuFilter
+  ${DEPENDENCIES}
 )
+
+rclcpp_components_register_nodes(PairsVinsImuFilter_VinsImuFilter PLUGIN "vins_imu_filter::VinsImuFilter" EXECUTABLE PairsVinsImuFilter_VinsImuFilter)
+
+## --------------------------------------------------------------
+## |                           testing                          |
+## --------------------------------------------------------------
+
+# if(ENABLE_TESTS)
+
+#   add_subdirectory(test)
+
+# endif()
 
 ## --------------------------------------------------------------
 ## |                           Install                          |
 ## --------------------------------------------------------------
 
 install(TARGETS ${LIBRARIES}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-  )
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
-install(DIRECTORY config launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
-install(FILES nodelets.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
+install(
+  DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY scripts
+  USE_SOURCE_PERMISSIONS
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_export_targets(
+  export_${PROJECT_NAME} HAS_LIBRARY_TARGET
+)
+
+ament_export_dependencies(
+  ${DEPENDENCIES}
+)
+
+ament_package()
