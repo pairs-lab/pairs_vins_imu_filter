@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  
+  <name>pairs_vins_imu_filter</name>
+  <version>0.1.0</version>
+  <description>The pairs_vins_imu_filter package</description>
+
+  <maintainer email="canhthanh@vnu.edu.vn">Thanh Nguyen Canh</maintainer>
+  <author email="canhthanh@vnu.edu.vn">Thanh Nguyen Canh</author>
+
+  <license>BSD 3-Clause</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>cmake_modules</depend>
+  <depend>geometry_msgs</depend>
+  <depend>pairs_lib</depend>
+  <depend>nav_msgs</depend>
+  <depend>nodelet</depend>
+  <depend>roscpp</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+
+  <export>
+    <nodelet plugin="${prefix}/nodelets.xml" />
+  </export>
+
+</package>
